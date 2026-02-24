@@ -1,5 +1,5 @@
 # 第一阶段：编译环境
-FROM maven:3.9.6-eclipse-temurin-21 AS build
+FROM maven:3.9.12-eclipse-temurin-21 AS build
 WORKDIR /app
 # 利用 Docker 缓存机制，先拷 pom.xml 下载依赖
 COPY pom.xml .
