@@ -11,6 +11,11 @@ services:
       - monitor-net
 
   app-server:
+    # 关键点 1：指定构建上下文为当前目录
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # 关键点 2：构建后的镜像名
     image: ha-springboot:latest
     container_name: monolith-app
     ports:
