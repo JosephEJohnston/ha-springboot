@@ -1,0 +1,23 @@
+server:
+  port: 8080
+  shutdown: graceful
+
+spring:
+  application:
+    name: ha-springboot
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+
+management:
+  server:
+    port: 9090
+    base-path: /actuator
+  endpoints:
+    web:
+      exposure:
+        include: ["health", "prometheus", "info", "metrics"]
+  endpoint:
+    health:
+      show-details: always
+      probes:
+        enabled: true
