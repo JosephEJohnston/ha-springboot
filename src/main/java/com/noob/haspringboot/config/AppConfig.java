@@ -2,8 +2,6 @@ package com.noob.haspringboot.config;
 
 import io.micrometer.observation.ObservationRegistry;
 import io.micrometer.observation.aop.ObservedAspect;
-import io.micrometer.tracing.Tracer;
-import io.micrometer.tracing.handler.DefaultTracingObservationHandler;
 import org.springframework.boot.task.ThreadPoolTaskExecutorBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,13 +23,6 @@ public class AppConfig {
     @Bean
     public ObservedAspect observedAspect(ObservationRegistry observationRegistry) {
         return new ObservedAspect(observationRegistry);
-    }
-
-    // 2. 强制将 Observation 和 Tracer 绑定
-    @Bean
-    void registerTracingHandler(ObservationRegistry observationRegistry, Tracer tracer) {
-        observationRegistry.observationConfig()
-                .observationHandler(new DefaultTracingObservationHandler(tracer));
     }
 
     /**
