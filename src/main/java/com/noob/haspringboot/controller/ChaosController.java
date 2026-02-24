@@ -2,6 +2,7 @@ package com.noob.haspringboot.controller;
 
 import com.noob.haspringboot.common.Result;
 import com.noob.haspringboot.service.TradeService;
+import io.micrometer.observation.annotation.Observed;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -48,12 +49,14 @@ public class ChaosController {
     }
 
     @GetMapping("/cpu-burn")
+    @Observed(name = "chaos.burn") // 显式触发观察
     public Result<Long> burn() {
         long startTime = System.currentTimeMillis();
         // 简单的死循环计算，模拟 CPU 100%
         while (System.currentTimeMillis() - startTime < 5000) {
             Math.sqrt(Math.random());
         }
+        log.info("burn finished");
         return Result.success(System.currentTimeMillis());
     }
 }

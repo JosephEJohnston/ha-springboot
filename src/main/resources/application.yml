@@ -11,19 +11,20 @@ spring:
 management:
   server:
     port: 9090
-    base-path: /actuator
+    base-path: /
   endpoints:
     web:
       exposure:
         include: ["health", "prometheus", "info", "metrics", "jfr", "zipkin"]
   tracing:
+    enabled: true
     sampling:
       # 采样率：1.0 表示记录所有请求。生产环境建议 0.1 (10%)
-      probability: 1
+      probability: 1.0
   zipkin:
     tracing:
       # Zipkin 服务端地址，稍后我们用 Docker 启动
-      endpoint: "http://localhost:9411/api/v2/spans"
+      endpoint: "http://zipkin:9411/api/v2/spans"
   endpoint:
     prometheus:
       enabled: true # 确保这个端点是启用的
