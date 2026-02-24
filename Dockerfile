@@ -9,7 +9,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # 第二阶段：运行环境
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:21-jdk
 WORKDIR /app
 # 从第一阶段拷贝打好的 jar 包
 COPY --from=build /app/target/*.jar app.jar
