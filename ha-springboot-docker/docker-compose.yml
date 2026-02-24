@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # 1. Zipkin 服务：视频存储站
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: zipkin
+    ports:
+      - "9411:9411"  # 浏览器访问 http://localhost:9411 查看链路
+    networks:
+      - monitor-net
+
+  # 2. 单体应用服务
+  app-server:
+    image: ha-springboot:latest
+    container_name: monolith-app
+    ports:
+      - "8080:8080"  # 业务端口
+      - "9090:9090"  # 管理端口 (Actuator)
+    environment:
+      - JAVA_OPTS=-Xms512m -Xmx512m
+      - SPRING_PROFILES_ACTIVE=prod
+      # 关键：告诉应用 Zipkin 在哪。在 Docker 网络里直接写服务名 zipkin
+      - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+    restart: always
+    healthcheck:
+      # 优化：指向你定义的 9090 管理端口，不占用业务带宽
+      test: ["CMD", "curl", "-f", "http://localhost:9090/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 40s # SpringBoot 启动较慢，建议给 40s
+    networks:
+      - monitor-net
+    depends_on:
+      - zipkin  # 确保记录仪后台先启动
+
+  # 3. Prometheus 监控服务
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9000:9090" # 避免和应用管理端口 9090 冲突
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    networks:
+      - monitor-net
+    depends_on:
+      - app-server
+
+networks:
+  monitor-net:
+    driver: bridge
