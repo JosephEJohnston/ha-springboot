@@ -10,30 +10,33 @@ services:
     networks:
       - monitor-net
 
-  # 2. 单体应用服务
   app-server:
     image: ha-springboot:latest
     container_name: monolith-app
     ports:
-      - "8080:8080"  # 业务端口
-      - "9090:9090"  # 管理端口 (Actuator)
+      - "8080:8080"
+      - "9090:9090"
     environment:
-      - JAVA_OPTS=-Xms512m -Xmx512m
+      # 修正 1：改为连续空格分隔；修正 2：文件名增加时间戳 %t 防止覆盖
+      - JAVA_OPTS=-Xms512m -Xmx512m -XX:StartFlightRecording=disk=true,repository=/tmp/jfr_repo,filename=/app/logs/recording-%t.jfr,dumponexit=true
       - SPRING_PROFILES_ACTIVE=prod
-      # 关键：告诉应用 Zipkin 在哪。在 Docker 网络里直接写服务名 zipkin
+      # 修正 3：确保环境变量名匹配 Spring Boot 3.x 规范
       - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
     restart: always
     healthcheck:
-      # 优化：指向你定义的 9090 管理端口，不占用业务带宽
+      # 建议：如果 curl 不通，尝试使用 wget -q --spider http://localhost:9090/actuator/health
       test: ["CMD", "curl", "-f", "http://localhost:9090/actuator/health"]
       interval: 10s
       timeout: 5s
       retries: 3
-      start_period: 40s # SpringBoot 启动较慢，建议给 40s
+      start_period: 45s # 考虑到 JFR 启动会有额外开销，稍微放宽一点
+    volumes:
+      - ./logs:/app/logs
+      - ./jfr_repo:/tmp/jfr_repo
     networks:
       - monitor-net
     depends_on:
-      - zipkin  # 确保记录仪后台先启动
+      - zipkin
 
   # 3. Prometheus 监控服务
   prometheus:

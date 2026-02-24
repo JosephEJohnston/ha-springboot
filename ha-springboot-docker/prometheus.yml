@@ -4,10 +4,11 @@ global:
 
 scrape_configs:
   - job_name: 'monolith-application'
-    metrics_path: '/actuator/prometheus' # 指定抓取路径
+    # 路径匹配你在 application.yml 中的配置: base-path: /actuator
+    metrics_path: '/actuator/prometheus'
     static_configs:
-      # 这里填写 docker-compose 中的服务名和端口
-      - targets: ['app-server:8080']
+      # 这里必须修改为管理端口 9090
+      - targets: ['app-server:9090']
         labels:
           env: 'production'
-          service: 'backend-monolith'
+          service: 'ha-springboot' # 对应你的服务名
