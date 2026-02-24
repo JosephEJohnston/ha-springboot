@@ -35,3 +35,6 @@ build/
 /generated_output
 mvnw
 mvnw.cmd
+
+logs
+jfr_repo
