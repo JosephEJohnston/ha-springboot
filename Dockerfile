@@ -18,4 +18,4 @@ RUN mkdir -p /app/logs /tmp/jfr_repo
 # 暴露业务和监控端口
 EXPOSE 8080 9090
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]
