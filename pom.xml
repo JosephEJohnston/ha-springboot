@@ -75,6 +75,15 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- mvn spring-boot:build-image -->
+                    <image>
+                        <name>ha-springboot:latest</name>
+                        <publish>false</publish>
+                    </image>
+                    <layers>
+                        <enabled>true</enabled> </layers>
+                </configuration>
             </plugin>
         </plugins>
     </build>
