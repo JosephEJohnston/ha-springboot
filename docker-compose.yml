@@ -70,6 +70,7 @@ services:
   banyandb:
     image: apache/skywalking-banyandb:0.6.1
     container_name: sw-banyandb
+    command: standalone
     networks:
       - monitor-net
     healthcheck:
