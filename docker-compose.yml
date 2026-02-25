@@ -22,11 +22,18 @@ services:
       - "8080:8080"
       - "9090:9090"
     environment:
-      # 修正 1：改为连续空格分隔；修正 2：文件名增加时间戳 %t 防止覆盖
-      - JAVA_OPTS=-Xms512m -Xmx512m -XX:StartFlightRecording=disk=true,repository=/tmp/jfr_repo,filename=/app/logs/recording-%t.jfr,dumponexit=true
+      # 1. JVM 参数：保留了你的 JFR 配置，并在最前面插塞了 SkyWalking Agent
+      - JAVA_OPTS=-Xms512m -Xmx512m -javaagent:/app/agent/skywalking-agent.jar -XX:StartFlightRecording=disk=true,repository=/tmp/jfr_repo,filename=/app/logs/recording-%t.jfr,dumponexit=true
+
       - SPRING_PROFILES_ACTIVE=prod
-      # 修正 3：确保环境变量名匹配 Spring Boot 3.x 规范
-      - MANAGEMENT_ZIPKIN_TRACING_ENDPOINT=http://zipkin:9411/api/v2/spans
+
+      # 2. SkyWalking 核心配置
+      - SW_AGENT_NAME=ha-springboot
+      - SW_AGENT_COLLECTOR_BACKEND_SERVICES=sw-oap:11800  # 指向咱们刚配的 10.3.0 OAP 容器
+
+      # 3. 之前辛苦调通的 Zipkin 配置（4.0 规范版）
+      # 10.3.0 的 Agent 极其聪明，它会自动识别并抓取 Micrometer 产生的 Trace 信号
+      - MANAGEMENT_TRACING_EXPORT_ZIPKIN_ENDPOINT=http://zipkin:9411/api/v2/spans
     restart: always
     healthcheck:
       # 建议：如果 curl 不通，尝试使用 wget -q --spider http://localhost:9090/actuator/health
@@ -38,6 +45,7 @@ services:
     volumes:
       - ./logs:/app/logs
       - ./jfr_repo:/tmp/jfr_repo
+      - ./skywalking-agent:/app/agent # 别忘了把 agent 包下载到本地这个目录
     networks:
       - monitor-net
     depends_on:
@@ -57,6 +65,48 @@ services:
       - monitor-net
     depends_on:
       - app-server
+
+  # 1. BanyanDB：10.3.0 的原生存储引擎，比 ES 快得多
+  banyandb:
+    image: apache/skywalking-banyandb:0.6.1
+    container_name: sw-banyandb
+    networks:
+      - monitor-net
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "17912"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # 2. SkyWalking OAP：核心收集器，支持 10.3.0 特性
+  skywalking-oap:
+    image: apache/skywalking-oap-server:10.0.0 # 对应 10.x 系列
+    container_name: sw-oap
+    depends_on:
+      banyandb:
+        condition: service_healthy
+    networks:
+      - monitor-net
+    ports:
+      - "11800:11800" # gRPC 端口 (Agent 连接)
+      - "12800:12800" # HTTP 端口
+    environment:
+      SW_STORAGE: banyandb
+      SW_STORAGE_BANYANDB_TARGETS: banyandb:17912
+      JAVA_OPTS: "-Xms512m -Xmx512m"
+
+  # 3. SkyWalking UI：10.3.0 版本的酷炫看板
+  skywalking-ui:
+    image: apache/skywalking-ui:10.0.0
+    container_name: sw-ui
+    depends_on:
+      - skywalking-oap
+    networks:
+      - monitor-net
+    ports:
+      - "8088:8080" # 访问地址：http://localhost:8088
+    environment:
+      SW_OAP_ADDRESS: http://skywalking-oap:12800
 
 networks:
   monitor-net:
