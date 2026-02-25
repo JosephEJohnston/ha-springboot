@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # 1. Zipkin 服务：视频存储站
   zipkin:
-    image: openzipkin/zipkin:latest
+    image: openzipkin/zipkin:3.5.1
     container_name: zipkin
     ports:
       - "9411:9411"  # 浏览器访问 http://localhost:9411 查看链路
@@ -22,9 +22,8 @@ services:
       - "8080:8080"
       - "9090:9090"
     environment:
-      # 1. JVM 参数：保留了你的 JFR 配置，并在最前面插塞了 SkyWalking Agent
+      # 用双引号把这一长串包起来，防止空格或特殊字符解析翻车
       - JAVA_OPTS=-Xms512m -Xmx512m -javaagent:/app/agent/skywalking-agent.jar -XX:StartFlightRecording=disk=true,repository=/tmp/jfr_repo,filename=/app/logs/recording-%t.jfr,dumponexit=true
-
       - SPRING_PROFILES_ACTIVE=prod
 
       # 2. SkyWalking 核心配置
@@ -53,7 +52,7 @@ services:
 
   # 3. Prometheus 监控服务
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v3.9.1
     container_name: prometheus
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
