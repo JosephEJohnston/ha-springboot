@@ -1,5 +1,5 @@
 # 使用轻量的 JDK 21 镜像，适配 2026 年的主流环境
-FROM openjdk:21-slim
+FROM eclipse-temurin:21-jdk
 
 # 定义版本号，目前最新是 4.1.5
 ARG ARTHAS_VERSION=4.1.5

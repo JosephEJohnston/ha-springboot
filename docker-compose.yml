@@ -114,7 +114,7 @@ services:
       dockerfile: Dockerfile.tunnel
     container_name: arthas-tunnel-server
     ports:
-      - "8080:8080" # Web 管理后台
+      - "8085:8080" # Web 管理后台
       - "7777:7777" # Agent 通讯端口
     restart: unless-stopped
 
