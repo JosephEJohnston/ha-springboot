@@ -41,7 +41,7 @@ arthas:
   # 即使集成进去，默认也可以设为 false，需要时通过配置中心热改开启
   enabled: true
   # 如果你有多个实例，可以配置 Tunnel Server 统一管理
-  tunnel-server: ws://arthas-tunnel-server:7777
+  tunnel-server: ws://arthas-tunnel-server:7777/ws
 
 # 关键：修改日志格式，让每一行日志都带上 [服务名, TraceId, SpanId]
 logging:

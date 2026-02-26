@@ -117,6 +117,8 @@ services:
       - "8085:8080" # Web 管理后台
       - "7777:7777" # Agent 通讯端口
     restart: unless-stopped
+    networks:
+      - monitor-net
 
 networks:
   monitor-net:
