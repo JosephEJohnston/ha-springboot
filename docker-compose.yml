@@ -108,6 +108,16 @@ services:
     environment:
       SW_OAP_ADDRESS: http://skywalking-oap:12800
 
+  arthas-tunnel-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.tunnel
+    container_name: arthas-tunnel-server
+    ports:
+      - "8080:8080" # Web 管理后台
+      - "7777:7777" # Agent 通讯端口
+    restart: unless-stopped
+
 networks:
   monitor-net:
     driver: bridge

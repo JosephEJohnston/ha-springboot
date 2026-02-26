@@ -35,6 +35,14 @@ management:
       probes:
         enabled: true
 
+arthas:
+  # 这里的 AgentId 会在 SkyWalking 里也非常有用，方便对应
+  agent-id: ${spring.application.name}
+  # 即使集成进去，默认也可以设为 false，需要时通过配置中心热改开启
+  enabled: true
+  # 如果你有多个实例，可以配置 Tunnel Server 统一管理
+  tunnel-server: ws://arthas-tunnel-server:7777
+
 # 关键：修改日志格式，让每一行日志都带上 [服务名, TraceId, SpanId]
 logging:
   pattern:
