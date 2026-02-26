@@ -71,14 +71,14 @@
             <artifactId>micrometer-tracing-bridge-brave</artifactId>
         </dependency>
         <!-- 数据报告器 -->
-        <dependency>
+        <!--<dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-zipkin</artifactId>
         </dependency>
         <dependency>
             <groupId>io.zipkin.reporter2</groupId>
             <artifactId>zipkin-reporter-brave</artifactId>
-        </dependency>
+        </dependency>-->
         <!-- 指定监控耗时接口 -->
         <dependency>
             <groupId>io.micrometer</groupId>

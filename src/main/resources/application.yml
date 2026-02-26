@@ -21,12 +21,12 @@ management:
       enabled: true # 4.0 强制开启追踪观察
   tracing:
     sampling:
-      probability: 1.0 # 每一个请求都记录
+      probability: 0.1 # 每一个请求都记录
     propagation:
       type: ["W3C", "B3"] # 确保多协议兼容
-    export:
-      zipkin:
-        endpoint: "http://zipkin:9411/api/v2/spans"
+#    export:
+#      zipkin:
+#        endpoint: "http://zipkin:9411/api/v2/spans"
   endpoint:
     prometheus:
       enabled: true # 确保这个端点是启用的

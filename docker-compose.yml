@@ -1,15 +1,6 @@
 version: '3.8'
 
 services:
-  # 1. Zipkin 服务：视频存储站
-  zipkin:
-    image: openzipkin/zipkin:3.5.1
-    container_name: zipkin
-    ports:
-      - "9411:9411"  # 浏览器访问 http://localhost:9411 查看链路
-    networks:
-      - monitor-net
-
   app-server:
     # 关键点 1：指定构建上下文为当前目录
     build:
@@ -47,8 +38,6 @@ services:
       - ./skywalking-agent:/app/agent # 别忘了把 agent 包下载到本地这个目录
     networks:
       - monitor-net
-    depends_on:
-      - zipkin
 
   # 3. Prometheus 监控服务
   prometheus:
