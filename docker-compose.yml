@@ -54,6 +54,21 @@ services:
     depends_on:
       - app-server
 
+  grafana:
+    image: grafana/grafana-oss:12.4.0
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    networks:
+      - monitor-net
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
   # 1. BanyanDB：10.3.0 的原生存储引擎，比 ES 快得多
   banyandb:
     image: apache/skywalking-banyandb:0.6.1
@@ -112,3 +127,6 @@ services:
 networks:
   monitor-net:
     driver: bridge
+
+volumes:
+  grafana-storage:
