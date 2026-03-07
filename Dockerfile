@@ -2,8 +2,11 @@
 FROM maven:3.9.12-eclipse-temurin-25 AS build
 WORKDIR /app
 # 利用 Docker 缓存机制，先拷 pom.xml 下载依赖
+# 拷贝 pom.xml
 COPY pom.xml .
-RUN mvn dependency:go-offline
+# 核心修改：使用 --mount 将 Maven 本地仓库挂载到宿主机缓存中
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn dependency:go-offline
 # 拷贝源码并打包
 COPY src ./src
 RUN mvn clean package -DskipTests
