@@ -1,5 +1,5 @@
 # 第一阶段：编译环境
-FROM maven:3.9.12-eclipse-temurin-21 AS build
+FROM maven:3.9.12-eclipse-temurin-25 AS build
 WORKDIR /app
 # 利用 Docker 缓存机制，先拷 pom.xml 下载依赖
 COPY pom.xml .
@@ -9,7 +9,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # 第二阶段：运行环境
-FROM eclipse-temurin:21-jdk
+FROM eclipse-temurin:25-jdk
 WORKDIR /app
 # 从第一阶段拷贝打好的 jar 包
 COPY --from=build /app/target/*.jar app.jar
