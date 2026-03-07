@@ -14,6 +14,7 @@ RUN mvn clean package -DskipTests
 # 第二阶段：运行环境
 FROM eclipse-temurin:25-jdk
 WORKDIR /app
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 # 从第一阶段拷贝打好的 jar 包
 COPY --from=build /app/target/*.jar app.jar
 # 预创建 JFR 目录
