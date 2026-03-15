@@ -6,63 +6,90 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/htmx.org@1.9.10"></script>
   <script defer src="https://unpkg.com/alpinejs@3.13.3/dist/cdn.min.js"></script>
+
+  <style>
+    /* 核心黑科技：定义视图过渡动画 */
+    /* 当 HTMX 交换内容时，新旧内容会有一个 0.2s 的淡入淡出，消除生硬的跳转感 */
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation-duration: 0.2s;
+        animation-timing-function: ease-in-out;
+    }
+
+    /* 强制让所有数字使用等宽字体，防止价格变动时字符宽度抖动 */
+    .font-mono {
+        font-variant-numeric: tabular-nums;
+    }
+  </style>
 </head>
 <body class="bg-gray-100 p-8">
 
 <div class="max-w-3xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
 
   <div class="px-6 py-4 bg-gray-800 flex justify-between items-center text-white">
-    <h1 class="text-xl font-bold">📈 核心宽基自选池</h1>
+    <h1 class="text-xl font-bold flex items-center gap-2">
+      <span>📈</span> 核心宽基自选池
+    </h1>
 
     <div x-data="{ loading: false }">
       <button
               hx-get="/market"
               hx-target="#market-data-container"
-              hx-swap="innerHTML"
+              hx-swap="innerHTML transition:true"
               @click="loading = true"
               @htmx:after-request="loading = false"
-              class="bg-blue-600 hover:bg-blue-500 text-sm font-semibold py-2 px-4 rounded flex items-center gap-2 transition"
+              class="bg-blue-600 hover:bg-blue-500 text-sm font-semibold py-2 px-4 rounded flex items-center gap-2 transition active:scale-95"
       >
-        <span x-show="loading" class="animate-spin">⏳</span>
-        <span x-text="loading ? '刷新中...' : '获取最新行情'"></span>
+        <span x-show="loading" class="animate-spin text-xs">⏳</span>
+        <span x-text="loading ? '同步中...' : '获取最新行情'"></span>
       </button>
     </div>
   </div>
 
-  <div id="market-data-container" class="p-6">
-    <div th:fragment="stock-table">
+  <div id="market-data-container"
+       class="p-6"
+       hx-get="/market"
+       hx-trigger="every 5s"
+       hx-target="this"
+       hx-swap="innerHTML transition:true"
+       th:fragment="stock-table">
 
-      <div class="text-sm text-gray-500 mb-4 flex items-center justify-between">
-        <span>行情数据纯属虚构，不构成投资建议</span>
-        <span>最后更新：<strong class="text-gray-800" th:text="${updateTime}">10:00:00</strong></span>
-      </div>
+    <div class="text-sm text-gray-500 mb-6 flex items-center justify-between border-b pb-2">
+                <span class="flex items-center gap-1">
+                    <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                    实时轮询已开启 (5s/次)
+                </span>
+      <span>最后更新：<strong class="text-gray-800 font-mono" th:text="${updateTime}">14:30:00</strong></span>
+    </div>
 
-      <div class="grid gap-4">
-        <div th:each="stock : ${stocks}"
-             class="flex justify-between items-center p-4 border rounded-lg hover:bg-gray-50 transition">
-          <div>
-            <div class="font-bold text-gray-800 text-lg" th:text="${stock.name}">ETF名称</div>
-            <div class="text-sm text-gray-400" th:text="${stock.code}">代码</div>
+    <div class="grid gap-4">
+      <div th:each="stock : ${stocks}"
+           class="flex justify-between items-center p-4 border border-gray-100 rounded-xl hover:shadow-md transition-shadow duration-300">
+
+        <div class="flex flex-col">
+          <span class="font-bold text-gray-800 text-lg tracking-tight" th:text="${stock.name}">ETF名称</span>
+          <span class="text-xs font-mono text-gray-400 mt-1" th:text="${stock.code}">510300</span>
+        </div>
+
+        <div class="text-right">
+          <div class="font-bold text-2xl font-mono leading-none"
+               th:classappend="${stock.isUp} ? 'text-red-500' : 'text-green-500'"
+               th:text="${stock.price}">
+            0.000
           </div>
-
-          <div class="text-right">
-            <div class="font-bold text-xl"
-                 th:classappend="${stock.isUp} ? 'text-red-500' : 'text-green-500'"
-                 th:text="${stock.price}">
-              1.000
-            </div>
-            <div class="text-sm"
-                 th:classappend="${stock.isUp} ? 'text-red-500' : 'text-green-500'"
-                 th:text="${stock.isUp ? '+ 赚麻了' : '- 抄底了'}">
-              状态
-            </div>
+          <div class="text-xs mt-2 font-medium px-2 py-0.5 rounded-full inline-block"
+               th:classappend="${stock.isUp} ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'"
+               th:text="${stock.isUp ? '▲ 赚麻了' : '▼ 抄底了'}">
+            状态
           </div>
         </div>
       </div>
-
     </div>
-  </div>
 
+    <p class="text-center text-[10px] text-gray-300 mt-8 uppercase tracking-widest">
+      Powered by Spring Boot 4 & HTMX & GraalVM
+    </p>
+  </div>
 </div>
 
 </body>
