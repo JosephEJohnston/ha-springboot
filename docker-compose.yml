@@ -17,13 +17,6 @@ services:
       - JAVA_OPTS=-Xms512m -Xmx512m -XX:StartFlightRecording=disk=true,repository=/tmp/jfr_repo,filename=/app/logs/recording-%t.jfr,dumponexit=true
       - SPRING_PROFILES_ACTIVE=prod
 
-      # 2. SkyWalking 核心配置
-      - SW_AGENT_NAME=ha-springboot
-      - SW_AGENT_COLLECTOR_BACKEND_SERVICES=sw-oap:11800  # 指向咱们刚配的 10.3.0 OAP 容器
-
-      # 3. 之前辛苦调通的 Zipkin 配置（4.0 规范版）
-      # 10.3.0 的 Agent 极其聪明，它会自动识别并抓取 Micrometer 产生的 Trace 信号
-      - MANAGEMENT_TRACING_EXPORT_ZIPKIN_ENDPOINT=http://zipkin:9411/api/v2/spans
     restart: always
     healthcheck:
       # 建议：如果 curl 不通，尝试使用 wget -q --spider http://localhost:9090/actuator/health
@@ -35,7 +28,6 @@ services:
     volumes:
       - ./logs:/app/logs
       - ./jfr_repo:/tmp/jfr_repo
-      - ./skywalking-agent:/app/agent # 别忘了把 agent 包下载到本地这个目录
     networks:
       - monitor-net
 
