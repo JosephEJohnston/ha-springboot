@@ -55,11 +55,10 @@ logging:
 ## native 环境配置
 gg:
   jte:
-    # 关键：告诉 Spring 即使在生产环境（Native）也按此路径找
+    enabled: true
+    # 核心：必须显式提高 JTE 的优先级，确保它在默认解析器之前执行
+    view-resolver-order: 10
     template-location: src/main/jte
-    # Native 模式下务必关闭开发模式
+    template-suffix: .jte
     development-mode: false
-    # 使用编译后的 class
     use-precompiled-templates: true
-
-

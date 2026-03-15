@@ -186,25 +186,19 @@
                 <version>${jte.version}</version>
                 <configuration>
                     <sourceDirectory>${project.basedir}/src/main/jte</sourceDirectory>
+                    <targetDirectory>${project.build.directory}/generated-sources/jte</targetDirectory>
                     <contentType>Html</contentType>
                     <extensions>
                         <extension>
                             <className>gg.jte.nativeimage.NativeResourcesExtension</className>
                         </extension>
                     </extensions>
-                    <targetDirectory/>
                 </configuration>
                 <executions>
                     <execution>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>generate</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>precompile</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -215,6 +209,26 @@
                         <version>${jte.version}</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/generated-sources/jte</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
