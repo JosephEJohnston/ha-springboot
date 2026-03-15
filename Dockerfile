@@ -3,6 +3,9 @@
 # 使用官方的 GraalVM 社区版 JDK 25 镜像
 # ==========================================
 FROM ghcr.io/graalvm/native-image-community:25 AS build
+# 建议放在 FROM 之后的第一行
+ENV LANG=C
+ENV LC_ALL=C
 WORKDIR /app
 
 # 强烈建议：GraalVM 基础镜像通常不带全局的 mvn 命令

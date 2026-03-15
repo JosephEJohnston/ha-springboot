@@ -1,6 +1,6 @@
 server:
-  port: 18080
-#  port: 8080
+#  port: 18080
+  port: 8080
   shutdown: graceful
 
 spring:
@@ -13,8 +13,8 @@ spring:
 
 management:
   server:
-    port: 19090
-#    port: 9090
+#    port: 19090
+    port: 9090
     base-path: /
   endpoints:
     web:
@@ -52,7 +52,14 @@ logging:
   pattern:
     level: "%5p [${spring.application.name:ha-springboot},%X{traceId:-},%X{spanId:-}]"
 
+## native 环境配置
 gg:
   jte:
-    development-mode: true
+    # 关键：告诉 Spring 即使在生产环境（Native）也按此路径找
+    template-location: src/main/jte
+    # Native 模式下务必关闭开发模式
+    development-mode: false
+    # 使用编译后的 class
+    use-precompiled-templates: true
+
 
