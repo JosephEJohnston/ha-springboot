@@ -1,25 +1,45 @@
-# 第一阶段：编译环境
-FROM maven:3.9.12-eclipse-temurin-25 AS build
+# ==========================================
+# 第一阶段：编译环境 (拥抱 GraalVM JDK 25)
+# 使用官方的 GraalVM 社区版 JDK 25 镜像
+# ==========================================
+FROM ghcr.io/graalvm/native-image-community:25 AS build
 WORKDIR /app
-# 利用 Docker 缓存机制，先拷 pom.xml 下载依赖
-# 拷贝 pom.xml
-COPY pom.xml .
-# 核心修改：使用 --mount 将 Maven 本地仓库挂载到宿主机缓存中
+
+# 强烈建议：GraalVM 基础镜像通常不带全局的 mvn 命令
+# 把你 Spring Boot 项目自带的 Maven Wrapper 拷进去用，保证版本一致性
+COPY .mvn/ .mvn/
+COPY mvnw pom.xml ./
+RUN chmod +x mvnw
+
+# 完美保留你的挂载缓存神技，加速依赖下载
 RUN --mount=type=cache,target=/root/.m2 \
-    mvn dependency:go-offline
+    ./mvnw dependency:go-offline
+
 # 拷贝源码并打包
 COPY src ./src
-RUN mvn clean package -DskipTests
 
-# 第二阶段：运行环境
-FROM eclipse-temurin:25-jdk
+# 执行 JDK 25 下的 AOT 原生编译 (-Pnative 激活原生配置)
+RUN --mount=type=cache,target=/root/.m2 \
+    ./mvnw clean native:compile -Pnative -DskipTests
+
+
+# ==========================================
+# 第二阶段：运行环境 (极简至上，丢弃庞大的 JDK 25)
+# ==========================================
+FROM debian:bookworm-slim
 WORKDIR /app
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
-# 从第一阶段拷贝打好的 jar 包
-COPY --from=build /app/target/*.jar app.jar
-# 预创建 JFR 目录
+
+# Native Image 产物只依赖最基础的 C 运行库 (glibc 和 zlib)
+RUN apt-get update && apt-get install -y curl libc6 libz1 && rm -rf /var/lib/apt/lists/*
+
+# 从 build 阶段拷贝打好的【二进制可执行文件】，而不是 app.jar
+# (假设你的 pom.xml 中 artifactId 是 ha-springboot，生成的文件同名)
+COPY --from=build /app/target/ha-springboot /app/ha-springboot
+
+# 预创建目录
 RUN mkdir -p /app/logs /tmp/jfr_repo
-# 暴露业务和监控端口
+
 EXPOSE 8080 9090
 
-ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]
+# 像启动 C/C++ 程序一样直接启动，享受几十毫秒的启动速度！
+ENTRYPOINT ["/app/ha-springboot"]
