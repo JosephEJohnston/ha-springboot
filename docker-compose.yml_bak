@@ -14,7 +14,7 @@ services:
       - "9090:9090"
     environment:
       # 用双引号把这一长串包起来，防止空格或特殊字符解析翻车
-      - JAVA_OPTS=-Xms512m -Xmx512m -XX:StartFlightRecording=disk=true,repository=/tmp/jfr_repo,filename=/app/logs/recording-%t.jfr,dumponexit=true
+      - JAVA_OPTS=-Xms512m -Xmx512m -javaagent:/app/agent/skywalking-agent.jar -XX:StartFlightRecording=disk=true,repository=/tmp/jfr_repo,filename=/app/logs/recording-%t.jfr,dumponexit=true
       - SPRING_PROFILES_ACTIVE=prod
 
       # 2. SkyWalking 核心配置
@@ -69,6 +69,61 @@ services:
     depends_on:
       - prometheus
     restart: unless-stopped
+
+  # 1. BanyanDB：10.3.0 的原生存储引擎，比 ES 快得多
+  banyandb:
+    image: apache/skywalking-banyandb:0.6.1
+    container_name: sw-banyandb
+    command: standalone
+    networks:
+      - monitor-net
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "17912"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # 2. SkyWalking OAP：核心收集器，支持 10.3.0 特性
+  skywalking-oap:
+    image: apache/skywalking-oap-server:10.0.0 # 对应 10.x 系列
+    container_name: sw-oap
+    depends_on:
+      banyandb:
+        condition: service_healthy
+    networks:
+      - monitor-net
+    ports:
+      - "11800:11800" # gRPC 端口 (Agent 连接)
+      - "12800:12800" # HTTP 端口
+    environment:
+      SW_STORAGE: banyandb
+      SW_STORAGE_BANYANDB_TARGETS: banyandb:17912
+      JAVA_OPTS: "-Xms512m -Xmx512m"
+
+  # 3. SkyWalking UI：10.3.0 版本的酷炫看板
+  skywalking-ui:
+    image: apache/skywalking-ui:10.0.0
+    container_name: sw-ui
+    depends_on:
+      - skywalking-oap
+    networks:
+      - monitor-net
+    ports:
+      - "8088:8080" # 访问地址：http://localhost:8088
+    environment:
+      SW_OAP_ADDRESS: http://skywalking-oap:12800
+
+  arthas-tunnel-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.tunnel
+    container_name: arthas-tunnel-server
+    ports:
+      - "8085:8080" # Web 管理后台
+      - "7777:7777" # Agent 通讯端口
+    restart: unless-stopped
+    networks:
+      - monitor-net
 
 networks:
   monitor-net:

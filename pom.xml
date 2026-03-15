@@ -32,11 +32,11 @@
     <dependencies>
 
         <!-- arthas -->
-        <dependency>
+        <!--<dependency>
             <groupId>com.taobao.arthas</groupId>
             <artifactId>arthas-spring-boot-starter</artifactId>
             <version>4.1.5</version>
-        </dependency>
+        </dependency>-->
 
         <!-- spring health 模块 -->
         <dependency>
@@ -44,7 +44,8 @@
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
         <!-- skywalking 日志记录上传 -->
-        <dependency>
+        <!-- native 环境下用不了 -->
+        <!--<dependency>
             <groupId>org.apache.skywalking</groupId>
             <artifactId>apm-toolkit-logback-1.x</artifactId>
             <version>9.6.0</version>
@@ -53,7 +54,7 @@
             <groupId>org.apache.skywalking</groupId>
             <artifactId>apm-toolkit-trace</artifactId>
             <version>9.6.0</version>
-        </dependency>
+        </dependency>-->
 
         <!-- prometheus 监控 -->
         <dependency>
