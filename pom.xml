@@ -30,6 +30,11 @@
         <java.version>25</java.version>
     </properties>
     <dependencies>
+        <dependency>
+            <groupId>gg.jte</groupId>
+            <artifactId>jte-spring-boot-starter-4</artifactId>
+            <version>3.2.3</version>
+        </dependency>
 
         <!-- arthas -->
         <!--<dependency>
@@ -170,6 +175,30 @@
                         <buildArg>--enable-monitoring=jmxserver,jvmstat</buildArg>
                     </buildArgs>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>gg.jte</groupId>
+                <artifactId>jte-maven-plugin</artifactId>
+                <version>3.2.3</version>
+                <configuration>
+                    <sourceDirectory>${project.basedir}/src/main/jte</sourceDirectory>
+                    <contentType>Html</contentType>
+                    <extensions>
+                        <extension>
+                            <className>gg.jte.nativeimage.NativeResourcesExtension</className>
+                        </extension>
+                    </extensions>
+                    <targetDirectory/>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

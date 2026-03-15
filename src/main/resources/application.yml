@@ -49,4 +49,7 @@ arthas:
 logging:
   pattern:
     level: "%5p [${spring.application.name:ha-springboot},%X{traceId:-},%X{spanId:-}]"
+gg:
+  jte:
+    development-mode: true
 
